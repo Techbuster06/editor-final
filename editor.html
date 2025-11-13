@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twin Clouds AI Editor</title>
+    <link rel="stylesheet" href="editor.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://unpkg.com/konva@9.3.6/konva.min.js"></script>
+</head>
+<body>
+
+    <div id="editor-app">
+        
+        <header class="editor-header">
+            <div class="logo-area">
+                <i class="fas fa-cloud"></i>
+                <span>Twin Clouds Editor</span>
+            </div>
+            <div class="canvas-size-select">
+                <label for="preset-size">Format:</label>
+                <select id="preset-size" class="styled-select">
+                    <option value="reel" data-w="300" data-h="550">Instagram Reel (300x550)</option>
+                    <option value="post" data-w="400" data-h="400">Square Post (400x400)</option>
+                    <option value="landscape" data-w="640" data-h="360">Landscape Post (640x360)</option>
+                    <option value="story" data-w="300" data-h="480">Story (300x480)</option>
+                </select>
+            </div>
+            <div class="action-area">
+                <button class="btn btn-export">Export</button>
+                <button class="btn btn-post">Post</button>
+            </div>
+        </header>
+
+        <div class="editor-layout">
+
+            <aside class="editor-sidebar left-sidebar">
+                <div class="sidebar-tabs">
+                    <button class="tab-button active" data-target="templates"><i class="fas fa-magic"></i></button>
+                    <button class="tab-button" data-target="media"><i class="fas fa-images"></i></button>
+                    <button class="tab-button" data-target="text"><i class="fas fa-font"></i></button>
+                    <button class="tab-button" data-target="music"><i class="fas fa-music"></i></button>
+                </div>
+
+                <div class="tab-content active" id="templates">
+                    <h3>Design Templates</h3>
+                    <p>Click a template to load it onto the canvas. Existing items will be removed.</p>
+                    
+                    <div class="template-grid">
+    <div class="template-item" data-template-id="carousel_template">
+        <img src="assets/templates/instagram_carousel.jpg" alt="Carousel Layout" class="template-thumbnail">
+        <div class="template-title">Carousel Layout</div>
+    </div>
+
+    <div class="template-item" data-template-id="video_ad_template">
+        <img src="assets/templates/video_ad_bg.jpg" alt="Video Ad Background" class="template-thumbnail">
+        <div class="template-title">Video Ad BG</div>
+    </div>
+
+    <div class="template-item" data-template-id="event_promo_template">
+        <img src="assets/templates/event promo.jpg" alt="Event Promo" class="template-thumbnail">
+        <div class="template-title">Event Promo</div>
+    </div>
+
+    <div class="template-item" data-template-id="product_announcement_template">
+        <img src="assets/templates/product announcement.jpg" alt="Product Announcement" class="template-thumbnail">
+        <div class="template-title">Product Announce</div>
+    </div>
+
+    <div class="template-item" data-template-id="quote_graphic_template">
+        <img src="assets/templates/quote graphic.jpg" alt="Quote Graphic" class="template-thumbnail">
+        <div class="template-title">Quote Graphic</div>
+    </div>
+</div>
+                </div>
+
+                <div class="tab-content" id="media">
+                    <h3>Your Media</h3>
+                    <p>Drag and drop your files here, or:</p>
+                    <input type="file" id="media-upload" accept="image/*" style="display: none;">
+                    <button class="btn btn-upload" id="upload-btn"><i class="fas fa-upload"></i> Upload Image</button>
+                </div>
+
+                <div class="tab-content" id="text">
+                    <h3>Text Styles</h3>
+                    <p>Click below to add text:</p>
+                    <div class="asset-grid">
+                        <div class="asset-card" data-text-type="heading">Add Heading</div>
+                        <div class="asset-card" data-text-type="body">Add Body Text</div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="music">
+                    <h3>Music</h3>
+                    <p>Upload an audio file to use as background music:</p>
+                    <input type="file" id="audio-upload-input" accept="audio/*" style="display: none;">
+                    <button class="btn btn-upload" id="upload-audio-btn"><i class="fas fa-upload"></i> Upload Audio File</button>
+
+                    <div id="audio-player-controls" style="margin-top: 20px; display: none;">
+                        <audio id="background-audio" controls style="width: 100%;"></audio>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="editor-canvas-zone">
+                <div class="canvas-controls">
+                    <button id="undo-btn"><i class="fas fa-undo"></i> Undo</button>
+                    <button id="redo-btn"><i class="fas fa-redo"></i> Redo</button>
+                    <span id="timeline-display">0:00 / 0:15</span>
+                    <button id="zoom-in"><i class="fas fa-search-plus"></i></button>
+                    <button id="zoom-out"><i class="fas fa-search-minus"></i></button>
+                </div>
+                
+                <div class="canvas-viewport">
+                    <div class="device-mockup">
+                        <div id="editor-canvas-container" style="width:100%; height:100%;"></div> 
+                    </div>
+                </div>
+
+                <div class="floating-toolbar" id="floating-toolbar">
+                    <button id="float-size"><i class="fas fa-text-height"></i> Size</button>
+                    <button id="float-bold"><i class="fas fa-bold"></i> Bold</button>
+                    <button id="float-italic"><i class="fas fa-italic"></i> Italic</button>
+                    <button id="float-duplicate"><i class="fas fa-clone"></i> Duplicate</button>
+                    <button id="float-to-front"><i class="fas fa-angle-double-up"></i> Front</button>
+                    <button id="float-to-back"><i class="fas fa-angle-double-down"></i> Back</button>
+                    <button id="float-delete"><i class="fas fa-trash-alt"></i> Delete</button>
+                </div>
+            </main>
+
+            <aside class="editor-sidebar right-sidebar">
+                <div class="sidebar-tabs-right">
+                    <button class="right-tab-button active" data-right-target="style-props"><i class="fas fa-palette"></i> Style</button>
+                    <button class="right-tab-button" data-right-target="anim-props"><i class="fas fa-bolt"></i> Animation</button>
+                    <button class="right-tab-button" data-right-target="filter-props"><i class="fas fa-sliders-h"></i> Filters</button>
+                </div>
+
+                <div class="right-tab-content active" id="style-props">
+                    
+                    <div class="property-group">
+                        <label>Opacity</label>
+                        <div class="slider-with-value">
+                            <input type="range" id="opacity-slider" min="0" max="100" value="100" class="styled-range">
+                            <span id="opacity-value">100%</span>
+                        </div>
+                    </div>
+
+                    <div class="property-group" id="color-group" style="display: none;">
+                        <label>Color</label>
+                        <div class="color-picker-group">
+                            <input type="color" id="color-picker" value="#FFFFFF" class="styled-color-picker">
+                            <input type="text" id="color-hex-input" value="#FFFFFF" class="color-hex-input">
+                            <button class="color-eyedropper-btn" id="eyedropper-btn"><i class="fas fa-eyedropper"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="property-group" id="font-group" style="display: none;">
+                        <label>Font Family</label>
+                        <select id="font-family-select" class="styled-select">
+                            <option value="Arial">Arial</option>
+                            <option value="Inter">Inter</option>
+                            <option value="Poppins">Poppins</option>
+                            <option value="Roboto">Roboto</option>
+                        </select>
+                    </div>
+
+                    <div class="property-group-toggle">
+                        <label for="shadow-toggle">Shadow</label>
+                        <label class="switch">
+                            <input type="checkbox" id="shadow-toggle">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div class="property-group" id="shadow-controls" style="display: none;">
+                        <label>Shadow Color</label>
+                        <input type="color" id="shadow-color" value="#000000">
+                        <label>Shadow Blur</label>
+                        <input type="range" id="shadow-blur" min="0" max="50" value="10">
+                        <label>Shadow Offset X</label>
+                        <input type="range" id="shadow-offset-x" min="-25" max="25" value="5">
+                        <label>Shadow Offset Y</label>
+                        <input type="range" id="shadow-offset-y" min="-25" max="25" value="5">
+                    </div>
+                </div>
+
+                <div class="right-tab-content" id="anim-props">
+                    <h3>Animation</h3>
+                    <p>Applies to the selected element.</p>
+                    <div class="property-group">
+                        <label>In Animation</label>
+                        <select id="animation-select" class="styled-select">
+                            <option value="none">None</option>
+                            <option value="fade_jiggle">Fade In & Jiggle (Demo)</option>
+                            <option value="slide_in_left">Slide In from Left</option>
+                            <option value="zoom_in">Zoom In</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="right-tab-content" id="filter-props">
+                    <h3>Preset Filters</h3>
+                    <p>Applies filters to the selected image.</p>
+                    <div class="property-group">
+                        <select id="preset-filter-select" class="styled-select">
+                            <option value="none">None</option>
+                            <option value="sunny">☀️ Sunny Day</option>
+                            <option value="blue-tone">❄️ Blue Tone</option>
+                            <option value="monochrome">⚫ Monochrome</option>
+                            <option value="vintage">📸 Vintage Sepia</option>
+                            <option value="high-contrast">✨ High Contrast</option>
+                        </select>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </div>
+
+    <script src="editor.js"></script>
+</body>
+</html>
